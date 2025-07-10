@@ -235,7 +235,12 @@ Config.Messages = {
     ['no_space'] = 'Inventaire plein.',
     ['farm_info'] = 'Nom: {name} | Type: {type} | Propriétaire: {owner}',
     ['invalid_radius'] = 'Le rayon doit être entre {min} et {max} mètres.',
-    ['zone_too_close'] = 'Une zone existe déjà trop proche de cette position.'
+    ['zone_too_close'] = 'Une zone existe déjà trop proche de cette position.',
+    ['item_created'] = 'Item {name} créé avec succès!',
+    ['item_exists'] = 'Un item avec ce nom existe déjà.',
+    ['item_creation_disabled'] = 'La création d\'items est désactivée.',
+    ['discord_log_sent'] = 'Log Discord envoyé avec succès.',
+    ['discord_log_error'] = 'Erreur lors de l\'envoi du log Discord.'
 }
 
 -- Interface NUI

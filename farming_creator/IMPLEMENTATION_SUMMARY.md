@@ -185,4 +185,88 @@ Votre demande initiale était :
 4. Redémarrer la ressource : `restart farming_creator`
 5. Utiliser `/farmzone` en tant que staff
 
-**Votre système de zones de farm personnalisées est maintenant opérationnel ! 🎉**
+## 🆕 NOUVEAU : Système de Création d'Items
+
+### 🎯 Fonctionnalités Items Ajoutées
+
+**Accès via l'onglet "Items" dans `/farmzone` :**
+
+✅ **Création d'items personnalisés** : Interface complète pour créer des items  
+✅ **Insertion automatique BDD** : Ajout direct dans la table `items`  
+✅ **Logs Discord automatiques** : Embed détaillé avec toutes les infos  
+✅ **Logs console complets** : Affichage détaillé lors de la création  
+✅ **Validation en temps réel** : Vérification du format des noms  
+✅ **Aperçu instantané** : Visualisation de l'item avant création  
+✅ **Catégories d'items** : 6 catégories disponibles  
+✅ **Usage farming** : Configuration pour graines, récoltes, outils  
+
+### 📋 Utilisation Items
+
+1. **Ouvrir le menu** : `/farmzone`
+2. **Cliquer sur l'onglet "Items"** 📦  
+3. **Remplir le formulaire** :
+   - Nom technique (ex: `super_carotte`)
+   - Label affiché (ex: `Super Carotte`)
+   - Description, catégorie, poids
+   - Propriétés (rare, utilisable, etc.)
+   - Usage farming (optionnel)
+4. **Créer l'item** ✅
+
+### 🔧 Configuration Discord
+
+Dans `config.lua`, configurez votre webhook :
+```lua
+Config.ItemCreation = {
+    enabled = true,
+    autoInsertDatabase = true,
+    discordLogs = {
+        enabled = true,
+        webhook = "VOTRE_WEBHOOK_DISCORD_ICI"
+    }
+}
+```
+
+### 📊 Logs Automatiques
+
+**Console :**
+```
+[FARMING CREATOR] Item créé et inséré dans la base de données:
+  ├─ Nom: super_carotte
+  ├─ Label: Super Carotte
+  ├─ Créé par: PlayerName
+  └─ ID BDD: 245
+[FARMING CREATOR] ✅ Item inséré avec succès
+[FARMING CREATOR] ✅ Log Discord envoyé
+```
+
+**Discord :**
+- Embed détaillé avec toutes les informations
+- Nom du créateur et timestamp
+- Propriétés de l'item
+- Usage farming si configuré
+
+### 🎯 Commandes Supplémentaires
+
+```
+/giveitem [nom_item] [quantité] [joueur_id] - Donner un item créé
+```
+
+### 📁 Nouveaux Fichiers
+
+- `README_ITEMS.md` - Guide complet pour les items
+- Configuration étendue dans `config.lua`
+- Interface items dans l'onglet du menu
+
+---
+
+**Votre système complet de zones ET d'items personnalisés est maintenant opérationnel ! 🎉**
+
+### 🚀 Installation Finale
+
+1. ✅ **Zones personnalisées** avec `/farmzone`
+2. ✅ **Création d'items** avec l'onglet Items
+3. ✅ **Logs Discord** automatiques
+4. ✅ **Insertion BDD** automatique
+5. ✅ **Validation** et **sécurité** complètes
+
+**Tout est prêt à l'emploi ! Vos staff peuvent maintenant créer zones ET items facilement ! 🔥**

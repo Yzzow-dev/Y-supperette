@@ -1,4 +1,4 @@
-THIS SHOULD BE A LINTER ERRORlocal ESX = nil
+local ESX = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
@@ -206,6 +206,88 @@ AddEventHandler('farming:createFarm', function(farmData)
     end)
 end)
 
+-- Nouvel event pour créer des items personnalisés
+RegisterServerEvent('farming:createCustomItem')
+AddEventHandler('farming:createCustomItem', function(itemData)
+    local source = source
+    local xPlayer = ESX.GetPlayerFromId(source)
+    
+    if not xPlayer then return end
+    
+    -- Vérifier les permissions
+    if Config.UsePermissions then
+        if not xPlayer.getGroup() or xPlayer.getGroup() ~= Config.RequiredPermission then
+            TriggerClientEvent('esx:showNotification', source, Config.Messages['no_permission'])
+            return
+        end
+    end
+    
+    -- Vérifier que la création d'items est activée
+    if not Config.ItemCreation.enabled or not Config.ItemCreation.allowStaffCreate then
+        TriggerClientEvent('esx:showNotification', source, 'La création d\'items est désactivée')
+        return
+    end
+    
+    -- Vérifier que l'item n'existe pas déjà
+    MySQL.Async.fetchAll('SELECT name FROM items WHERE name = ?', {itemData.name}, function(result)
+        if #result > 0 then
+            TriggerClientEvent('esx:showNotification', source, 'Un item avec ce nom existe déjà!')
+            return
+        end
+        
+        -- Insérer l'item dans la base de données
+        if Config.ItemCreation.autoInsertDatabase then
+            MySQL.Async.insert([[
+                INSERT INTO items 
+                (name, label, weight, rare, can_remove, usable, shouldClose, combinable, description) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ]], {
+                itemData.name,
+                itemData.label,
+                itemData.weight,
+                itemData.rare,
+                itemData.can_remove,
+                itemData.usable,
+                itemData.shouldClose,
+                nil, -- combinable
+                itemData.description
+            }, function(insertId)
+                if insertId then
+                    -- Log console
+                    print('^2[FARMING CREATOR]^7 Item créé et inséré dans la base de données:')
+                    print('  ├─ Nom: ' .. itemData.name)
+                    print('  ├─ Label: ' .. itemData.label)
+                    print('  ├─ Catégorie: ' .. itemData.category)
+                    print('  ├─ Créé par: ' .. xPlayer.getName() .. ' (' .. xPlayer.identifier .. ')')
+                    print('  └─ ID BDD: ' .. insertId)
+                    
+                    -- Envoyer vers Discord si activé
+                    if Config.ItemCreation.discordLogs.enabled then
+                        SendItemToDiscord(itemData, xPlayer)
+                    end
+                    
+                    -- Si c'est un item de farming, l'ajouter au config dynamiquement
+                    if itemData.usageType and itemData.usageType ~= 'none' and itemData.farmingData then
+                        AddItemToFarmingConfig(itemData)
+                    end
+                    
+                    TriggerClientEvent('esx:showNotification', source, 'Item ^2' .. itemData.label .. '^7 créé avec succès!')
+                else
+                    TriggerClientEvent('esx:showNotification', source, 'Erreur lors de l\'insertion en base de données')
+                end
+            end)
+        else
+            -- Juste loguer sans insérer
+            print('^3[FARMING CREATOR]^7 Item créé (insertion BDD désactivée):')
+            print('  ├─ Nom: ' .. itemData.name)
+            print('  ├─ Label: ' .. itemData.label)
+            print('  └─ Créé par: ' .. xPlayer.getName())
+            
+            TriggerClientEvent('esx:showNotification', source, 'Item créé (vérifiez les logs)')
+        end
+    end)
+end)
+
 -- Nouvel event pour créer des zones personnalisées
 RegisterServerEvent('farming:createCustomZone')
 AddEventHandler('farming:createCustomZone', function(zoneData)
@@ -323,6 +405,92 @@ AddEventHandler('farming:createCustomZone', function(zoneData)
             table.insert(farms, newZone)
             TriggerClientEvent('farming:farmCreated', -1, newZone)
             TriggerClientEvent('esx:showNotification', source, Config.Messages['farm_zone_created'])
+        end
+    end)
+end)
+
+-- Nouvel event pour créer des items personnalisés
+RegisterServerEvent('farming:createCustomItem')
+AddEventHandler('farming:createCustomItem', function(itemData)
+    local source = source
+    local xPlayer = ESX.GetPlayerFromId(source)
+    
+    if not xPlayer then return end
+    
+    -- Vérifier les permissions
+    if Config.UsePermissions then
+        if not xPlayer.getGroup() or xPlayer.getGroup() ~= Config.RequiredPermission then
+            TriggerClientEvent('esx:showNotification', source, Config.Messages['no_permission'])
+            return
+        end
+    end
+    
+    -- Vérifier que la création d'items est activée
+    if not Config.ItemCreation.enabled or not Config.ItemCreation.allowStaffCreate then
+        TriggerClientEvent('esx:showNotification', source, 'La création d\'items est désactivée')
+        return
+    end
+    
+    -- Vérifier que l'item n'existe pas déjà
+    MySQL.Async.fetchAll('SELECT name FROM items WHERE name = ?', {itemData.name}, function(result)
+        if #result > 0 then
+            TriggerClientEvent('esx:showNotification', source, 'Un item avec ce nom existe déjà!')
+            return
+        end
+        
+        -- Insérer l'item dans la base de données
+        if Config.ItemCreation.autoInsertDatabase then
+            MySQL.Async.insert([[
+                INSERT INTO items 
+                (name, label, weight, rare, can_remove, usable, shouldClose, combinable, description) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ]], {
+                itemData.name,
+                itemData.label,
+                itemData.weight,
+                itemData.rare,
+                itemData.can_remove,
+                itemData.usable,
+                itemData.shouldClose,
+                nil, -- combinable
+                itemData.description
+            }, function(insertId)
+                if insertId then
+                    -- Log console
+                    print('^2[FARMING CREATOR]^7 Item créé et inséré dans la base de données:')
+                    print('  ├─ Nom: ' .. itemData.name)
+                    print('  ├─ Label: ' .. itemData.label)
+                    print('  ├─ Catégorie: ' .. itemData.category)
+                    print('  ├─ Poids: ' .. itemData.weight .. 'kg')
+                    print('  ├─ Rareté: ' .. (itemData.rare == 1 and 'Rare' or 'Commun'))
+                    print('  ├─ Créé par: ' .. xPlayer.getName() .. ' (' .. xPlayer.identifier .. ')')
+                    print('  └─ ID BDD: ' .. insertId)
+                    
+                    -- Envoyer vers Discord si activé
+                    if Config.ItemCreation.discordLogs.enabled then
+                        SendItemToDiscord(itemData, xPlayer, insertId)
+                    end
+                    
+                    -- Si c'est un item de farming, l'ajouter au config dynamiquement
+                    if itemData.usageType and itemData.usageType ~= 'none' and itemData.farmingData then
+                        AddItemToFarmingConfig(itemData)
+                    end
+                    
+                    TriggerClientEvent('esx:showNotification', source, 'Item ^2' .. itemData.label .. '^7 créé avec succès!')
+                    print('^2[FARMING CREATOR]^7 ✅ Item inséré avec succès dans la table items')
+                else
+                    print('^1[FARMING CREATOR]^7 ❌ Erreur lors de l\'insertion en base de données')
+                    TriggerClientEvent('esx:showNotification', source, 'Erreur lors de l\'insertion en base de données')
+                end
+            end)
+        else
+            -- Juste loguer sans insérer
+            print('^3[FARMING CREATOR]^7 Item créé (insertion BDD désactivée):')
+            print('  ├─ Nom: ' .. itemData.name)
+            print('  ├─ Label: ' .. itemData.label)
+            print('  └─ Créé par: ' .. xPlayer.getName())
+            
+            TriggerClientEvent('esx:showNotification', source, 'Item créé (vérifiez les logs)')
         end
     end)
 end)
@@ -564,6 +732,140 @@ function GenerateZonePoints(centerCoords, radius, density)
     return positions
 end
 
+-- Fonctions utilitaires pour les items personnalisés
+
+-- Fonction pour envoyer les logs vers Discord
+function SendItemToDiscord(itemData, xPlayer, insertId)
+    local webhook = Config.ItemCreation.discordLogs.webhook
+    
+    if not webhook or webhook == "VOTRE_WEBHOOK_DISCORD_ICI" then
+        print('^3[FARMING CREATOR]^7 ⚠️ Webhook Discord non configuré')
+        return
+    end
+    
+    local embed = {
+        {
+            ["title"] = "🆕 Nouvel Item Créé",
+            ["color"] = Config.ItemCreation.discordLogs.embedColor,
+            ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+            ["thumbnail"] = {
+                ["url"] = "https://cdn.discordapp.com/emojis/📦.png"
+            },
+            ["fields"] = {
+                {
+                    ["name"] = "📝 Informations de l'item",
+                    ["value"] = "**Nom:** `" .. itemData.name .. "`\n" ..
+                               "**Label:** " .. itemData.label .. "\n" ..
+                               "**Catégorie:** " .. itemData.category .. "\n" ..
+                               "**Poids:** " .. itemData.weight .. "kg\n" ..
+                               "**Rareté:** " .. (itemData.rare == 1 and "Rare 💎" or "Commun ⚪"),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "⚙️ Propriétés",
+                    ["value"] = "**Utilisable:** " .. (itemData.usable == 1 and "Oui ✅" or "Non ❌") .. "\n" ..
+                               "**Supprimable:** " .. (itemData.can_remove == 1 and "Oui ✅" or "Non ❌") .. "\n" ..
+                               "**Ferme inventaire:** " .. (itemData.shouldClose == 1 and "Oui ✅" or "Non ❌"),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "👨‍💼 Créateur",
+                    ["value"] = "**Nom:** " .. xPlayer.getName() .. "\n" ..
+                               "**ID:** " .. xPlayer.source .. "\n" ..
+                               "**Identifier:** `" .. xPlayer.identifier .. "`",
+                    ["inline"] = false
+                }
+            },
+            ["footer"] = {
+                ["text"] = "Farming Creator • ID BDD: " .. (insertId or "N/A"),
+                ["icon_url"] = Config.ItemCreation.discordLogs.avatar
+            }
+        }
+    }
+    
+    -- Ajouter les informations de farming si disponibles
+    if itemData.usageType and itemData.usageType ~= 'none' and itemData.farmingData then
+        local farmingInfo = ""
+        if itemData.usageType == 'seed' then
+            farmingInfo = "**Type:** Graine 🌱\n" ..
+                         "**Prix:** " .. itemData.farmingData.price .. "$\n" ..
+                         "**Temps croissance:** " .. (itemData.farmingData.growTime / 60000) .. " min"
+        elseif itemData.usageType == 'harvest' then
+            farmingInfo = "**Type:** Récolte 🌾\n" ..
+                         "**Prix vente:** " .. itemData.farmingData.sellPrice .. "$\n" ..
+                         "**Quantité:** " .. itemData.farmingData.harvestAmount.min .. "-" .. itemData.farmingData.harvestAmount.max
+        elseif itemData.usageType == 'tool' then
+            farmingInfo = "**Type:** Outil 🔧"
+        end
+        
+        table.insert(embed[1].fields, {
+            ["name"] = "🚜 Usage Farming",
+            ["value"] = farmingInfo,
+            ["inline"] = false
+        })
+    end
+    
+    -- Ajouter la description si elle existe
+    if itemData.description and itemData.description ~= "" then
+        table.insert(embed[1].fields, {
+            ["name"] = "📄 Description",
+            ["value"] = "```" .. itemData.description .. "```",
+            ["inline"] = false
+        })
+    end
+    
+    local data = {
+        ["username"] = Config.ItemCreation.discordLogs.botName,
+        ["avatar_url"] = Config.ItemCreation.discordLogs.avatar,
+        ["embeds"] = embed
+    }
+    
+    -- Envoyer vers Discord
+    PerformHttpRequest(webhook, function(err, text, headers)
+        if err == 200 then
+            print('^2[FARMING CREATOR]^7 ✅ Log Discord envoyé avec succès')
+        else
+            print('^1[FARMING CREATOR]^7 ❌ Erreur envoi Discord (Code: ' .. err .. ')')
+        end
+    end, 'POST', json.encode(data), {['Content-Type'] = 'application/json'})
+end
+
+-- Fonction pour ajouter un item au système de farming (dynamique)
+function AddItemToFarmingConfig(itemData)
+    if itemData.usageType == 'seed' and itemData.farmingData then
+        print('^3[FARMING CREATOR]^7 🌱 Ajout de la graine "' .. itemData.name .. '" au système de farming')
+        
+        -- Créer une nouvelle culture dynamique
+        local newCropType = {
+            name = itemData.label,
+            description = itemData.description or 'Culture personnalisée',
+            growTime = itemData.farmingData.growTime,
+            harvestAmount = itemData.farmingData.harvestAmount or {min = 1, max = 3},
+            harvestItem = itemData.name:gsub('_seed', ''), -- Enlever _seed pour l'item de récolte
+            seedItem = itemData.name,
+            seedPrice = itemData.farmingData.price,
+            sellPrice = itemData.farmingData.sellPrice or 5,
+            model = 'prop_veg_crop_03_cab', -- Modèle par défaut
+            blip = {
+                sprite = 238,
+                color = 2,
+                scale = 0.8
+            },
+            marker = {
+                type = 1,
+                r = 0, g = 255, b = 0, a = 100,
+                scale = {x = 1.0, y = 1.0, z = 1.0}
+            }
+        }
+        
+        -- Ajouter au config (temporaire, redémarre avec le serveur)
+        local cropKey = itemData.name:gsub('_seed', '')
+        Config.CropTypes[cropKey] = newCropType
+        
+        print('^2[FARMING CREATOR]^7 ✅ Culture "' .. cropKey .. '" ajoutée dynamiquement')
+    end
+end
+
 -- Commandes administrateur
 RegisterCommand('giveseed', function(source, args, rawCommand)
     if source == 0 then return end -- Console uniquement
@@ -592,6 +894,54 @@ RegisterCommand('giveseed', function(source, args, rawCommand)
     local seedItem = Config.CropTypes[cropType].seedItem
     xPlayer.addInventoryItem(seedItem, amount)
     TriggerClientEvent('esx:showNotification', source, 'Vous avez reçu ' .. amount .. 'x ' .. seedItem)
+end, false)
+
+-- Nouvelle commande pour donner des items personnalisés
+RegisterCommand('giveitem', function(source, args, rawCommand)
+    if source == 0 then return end -- Console uniquement
+    
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if not xPlayer then return end
+    
+    if Config.UsePermissions and xPlayer.getGroup() ~= Config.RequiredPermission then
+        TriggerClientEvent('esx:showNotification', source, Config.Messages['no_permission'])
+        return
+    end
+    
+    if #args < 2 then
+        TriggerClientEvent('esx:showNotification', source, 'Usage: /giveitem [nom_item] [quantité] [joueur_id (optionnel)]')
+        return
+    end
+    
+    local itemName = args[1]
+    local amount = tonumber(args[2]) or 1
+    local targetId = args[3] and tonumber(args[3]) or source
+    
+    local targetPlayer = ESX.GetPlayerFromId(targetId)
+    if not targetPlayer then
+        TriggerClientEvent('esx:showNotification', source, 'Joueur introuvable')
+        return
+    end
+    
+    -- Vérifier que l'item existe
+    MySQL.Async.fetchAll('SELECT * FROM items WHERE name = ?', {itemName}, function(result)
+        if #result == 0 then
+            TriggerClientEvent('esx:showNotification', source, 'Item "' .. itemName .. '" introuvable')
+            return
+        end
+        
+        local item = result[1]
+        targetPlayer.addInventoryItem(itemName, amount)
+        
+        if targetId == source then
+            TriggerClientEvent('esx:showNotification', source, 'Vous avez reçu ' .. amount .. 'x ' .. item.label)
+        else
+            TriggerClientEvent('esx:showNotification', source, 'Vous avez donné ' .. amount .. 'x ' .. item.label .. ' à ' .. targetPlayer.getName())
+            TriggerClientEvent('esx:showNotification', targetId, 'Vous avez reçu ' .. amount .. 'x ' .. item.label)
+        end
+        
+        print('^2[FARMING CREATOR]^7 Item donné: ' .. amount .. 'x ' .. item.label .. ' à ' .. targetPlayer.getName())
+    end)
 end, false)
 
 -- Auto-save toutes les 5 minutes
