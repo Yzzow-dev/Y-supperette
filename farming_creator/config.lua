@@ -1,15 +1,47 @@
-THIS SHOULD BE A LINTER ERRORConfig = {}
+Config = {}
 
 -- Configuration générale
 Config.Locale = 'fr'
 Config.UsePermissions = true
 Config.RequiredPermission = 'admin'
 
+-- Configuration Discord Logs
+Config.Discord = {
+    enabled = true,
+    webhook = "VOTRE_WEBHOOK_URL_ICI", -- Remplacez par votre webhook Discord
+    serverName = "Farming Creator System",
+    embedColor = 65280, -- Vert
+    footerText = "Farming Creator",
+    avatarURL = "https://i.imgur.com/YourImageHere.png" -- Optionnel
+}
+
+-- Configuration du système d'items personnalisés
+Config.CustomItems = {
+    enabled = true,
+    allowStaffSuggestions = true, -- Permettre aux staff de suggérer des items
+    autoInsertIntoDB = true, -- Insertion automatique en BDD
+    logToConsole = true, -- Logs dans la console
+    logToDiscord = true, -- Logs sur Discord
+    maxItemsPerPlayer = 50, -- Limite d'items par joueur
+    
+    -- Paramètres par défaut pour les nouveaux items
+    defaultValues = {
+        weight = 1,
+        rare = 0,
+        can_remove = 1,
+        stackable = true,
+        usable = false
+    }
+}
+
 -- Commandes
 Config.Commands = {
     farmingMenu = 'farmingcreator',
     deleteFarm = 'delfarm',
-    farmZoneMenu = 'farmzone' -- Nouvelle commande pour créer des zones personnalisées
+    farmZoneMenu = 'farmzone', -- Nouvelle commande pour créer des zones personnalisées
+    createItem = 'createitem', -- Nouvelle commande pour créer des items
+    itemMenu = 'itemmenu', -- Menu des items personnalisés
+    suggestItem = 'suggestitem' -- Pour les staff - suggérer un item
 }
 
 -- Distance d'interaction
@@ -204,7 +236,19 @@ Config.Messages = {
     ['no_space'] = 'Inventaire plein.',
     ['farm_info'] = 'Nom: {name} | Type: {type} | Propriétaire: {owner}',
     ['invalid_radius'] = 'Le rayon doit être entre {min} et {max} mètres.',
-    ['zone_too_close'] = 'Une zone existe déjà trop proche de cette position.'
+    ['zone_too_close'] = 'Une zone existe déjà trop proche de cette position.',
+    
+    -- Messages pour le système d'items personnalisés
+    ['item_created'] = 'Item "{name}" créé avec succès et inséré dans la base de données!',
+    ['item_suggestion_sent'] = 'Votre suggestion d\'item a été envoyée!',
+    ['item_name_required'] = 'Le nom de l\'item est requis.',
+    ['item_label_required'] = 'Le label de l\'item est requis.',
+    ['item_already_exists'] = 'Un item avec ce nom existe déjà.',
+    ['max_items_reached'] = 'Vous avez atteint la limite d\'items personnalisés ({max}).',
+    ['item_created_by'] = 'Item créé par {player}',
+    ['item_suggested_by'] = 'Item suggéré par {player}',
+    ['discord_log_failed'] = 'Erreur lors de l\'envoi du log Discord.',
+    ['item_system_disabled'] = 'Le système d\'items personnalisés est désactivé.'
 }
 
 -- Interface NUI

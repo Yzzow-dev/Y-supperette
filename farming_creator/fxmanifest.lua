@@ -6,12 +6,14 @@ description 'Système de création de fermes personnalisées pour FiveM'
 version '1.0.0'
 
 client_scripts {
-    'client/*.lua'
+    'client/main.lua',
+    'client/item_creator_client.lua'
 }
 
 server_scripts {
     '@mysql-async/lib/MySQL.lua',
-    'server/*.lua'
+    'server/main.lua',
+    'server/item_creator.lua'
 }
 
 shared_scripts {
