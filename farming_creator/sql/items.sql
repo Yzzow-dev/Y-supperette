@@ -37,6 +37,11 @@ INSERT INTO `items` (`name`, `label`, `weight`, `rare`, `can_remove`) VALUES
 ('farming_fertilizer', 'Engrais', 1, 0, 1),
 ('farming_basket', 'Panier de Récolte', 2, 0, 1);
 
+-- Items pour les zones personnalisées
+INSERT INTO `items` (`name`, `label`, `weight`, `rare`, `can_remove`) VALUES
+('farmbox', 'Caisse de Récolte', 2, 0, 1),
+('custom_seed', 'Graines Universelles', 1, 0, 1);
+
 -- ====================================
 -- MISE À JOUR DE LA BASE DE DONNÉES
 -- ====================================

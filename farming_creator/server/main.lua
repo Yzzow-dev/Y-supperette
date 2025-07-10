@@ -36,7 +36,53 @@ MySQL.ready(function()
         )
     ]], {}, function(result)
         print('[Farming Creator] Table farming_plants créée/vérifiée')
-        LoadAllFarms()
+    end)
+    
+    -- Nouvelle table pour les zones personnalisées
+    MySQL.Async.execute([[
+        CREATE TABLE IF NOT EXISTS farming_zones (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            label VARCHAR(100),
+            description TEXT,
+            coords_x FLOAT NOT NULL,
+            coords_y FLOAT NOT NULL,
+            coords_z FLOAT NOT NULL,
+            radius FLOAT NOT NULL,
+            density VARCHAR(20) DEFAULT 'medium',
+            color INT DEFAULT 2,
+            blip_sprite INT DEFAULT 164,
+            show_markers BOOLEAN DEFAULT TRUE,
+            harvest_item VARCHAR(50) DEFAULT 'farmbox',
+            harvest_min INT DEFAULT 1,
+            harvest_max INT DEFAULT 3,
+            grow_time INT DEFAULT 240000,
+            require_seeds BOOLEAN DEFAULT FALSE,
+            access_type VARCHAR(20) DEFAULT 'public',
+            allowed_job VARCHAR(50),
+            allowed_gang VARCHAR(50),
+            owner VARCHAR(50) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ]], {}, function(result)
+        print('[Farming Creator] Table farming_zones créée/vérifiée')
+        
+        -- Nouvelle table pour les points de récolte des zones
+        MySQL.Async.execute([[
+            CREATE TABLE IF NOT EXISTS farming_zone_points (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                zone_id INT NOT NULL,
+                coords_x FLOAT NOT NULL,
+                coords_y FLOAT NOT NULL,
+                coords_z FLOAT NOT NULL,
+                planted BOOLEAN DEFAULT FALSE,
+                harvest_time BIGINT DEFAULT NULL,
+                FOREIGN KEY (zone_id) REFERENCES farming_zones(id) ON DELETE CASCADE
+            )
+        ]], {}, function(result)
+            print('[Farming Creator] Table farming_zone_points créée/vérifiée')
+            LoadAllFarms()
+        end)
     end)
 end)
 
@@ -156,6 +202,127 @@ AddEventHandler('farming:createFarm', function(farmData)
             
             table.insert(farms, newFarm)
             TriggerClientEvent('farming:farmCreated', -1, newFarm)
+        end
+    end)
+end)
+
+-- Nouvel event pour créer des zones personnalisées
+RegisterServerEvent('farming:createCustomZone')
+AddEventHandler('farming:createCustomZone', function(zoneData)
+    local source = source
+    local xPlayer = ESX.GetPlayerFromId(source)
+    
+    if not xPlayer then return end
+    
+    -- Vérifier les permissions
+    if Config.UsePermissions then
+        if not xPlayer.getGroup() or xPlayer.getGroup() ~= Config.RequiredPermission then
+            TriggerClientEvent('esx:showNotification', source, Config.Messages['no_permission'])
+            return
+        end
+    end
+    
+    -- Vérifier que les zones personnalisées sont activées
+    if not Config.FarmZones.enabled then
+        TriggerClientEvent('esx:showNotification', source, 'Les zones personnalisées sont désactivées')
+        return
+    end
+    
+    -- Vérifier la proximité avec d'autres zones (éviter les chevauchements)
+    local tooClose = false
+    for _, farm in ipairs(farms) do
+        local distance = #(vector3(zoneData.coords.x, zoneData.coords.y, zoneData.coords.z) - 
+                         vector3(farm.coords.x, farm.coords.y, farm.coords.z))
+        if distance < (zoneData.radius + 50) then -- Buffer de 50m
+            tooClose = true
+            break
+        end
+    end
+    
+    if tooClose then
+        TriggerClientEvent('esx:showNotification', source, Config.Messages['zone_too_close'])
+        return
+    end
+    
+    -- Insérer la zone dans la base de données
+    MySQL.Async.insert([[
+        INSERT INTO farming_zones 
+        (name, label, description, coords_x, coords_y, coords_z, radius, density, color, 
+         blip_sprite, show_markers, harvest_item, harvest_min, harvest_max, grow_time, 
+         require_seeds, access_type, allowed_job, allowed_gang, owner) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ]], {
+        zoneData.name,
+        zoneData.label,
+        zoneData.description,
+        zoneData.coords.x,
+        zoneData.coords.y,
+        zoneData.coords.z,
+        zoneData.radius,
+        zoneData.density,
+        zoneData.color,
+        zoneData.blipSprite,
+        zoneData.showMarkers,
+        zoneData.harvestItem,
+        zoneData.harvestAmount.min,
+        zoneData.harvestAmount.max,
+        zoneData.growTime,
+        zoneData.requireSeeds,
+        zoneData.accessType,
+        zoneData.allowedJob,
+        zoneData.allowedGang,
+        xPlayer.identifier
+    }, function(zoneId)
+        if zoneId then
+            -- Générer les points de récolte dans la zone
+            local points = GenerateZonePoints(zoneData.coords, zoneData.radius, zoneData.density)
+            
+            for _, pointCoords in ipairs(points) do
+                MySQL.Async.insert('INSERT INTO farming_zone_points (zone_id, coords_x, coords_y, coords_z) VALUES (?, ?, ?, ?)', {
+                    zoneId,
+                    pointCoords.x,
+                    pointCoords.y,
+                    pointCoords.z
+                })
+            end
+            
+            -- Créer l'objet zone
+            local newZone = {
+                id = zoneId,
+                name = zoneData.name,
+                label = zoneData.label,
+                description = zoneData.description,
+                coords = zoneData.coords,
+                radius = zoneData.radius,
+                density = zoneData.density,
+                color = zoneData.color,
+                blipSprite = zoneData.blipSprite,
+                showMarkers = zoneData.showMarkers,
+                harvestItem = zoneData.harvestItem,
+                harvestAmount = zoneData.harvestAmount,
+                growTime = zoneData.growTime,
+                requireSeeds = zoneData.requireSeeds,
+                accessType = zoneData.accessType,
+                allowedJob = zoneData.allowedJob,
+                allowedGang = zoneData.allowedGang,
+                owner = xPlayer.identifier,
+                isZone = true, -- Marquer comme zone personnalisée
+                plants = {}
+            }
+            
+            -- Ajouter les points
+            for i, pointCoords in ipairs(points) do
+                table.insert(newZone.plants, {
+                    id = zoneId * 10000 + i, -- ID temporaire différent des fermes
+                    coords = pointCoords,
+                    planted = false,
+                    harvestTime = nil
+                })
+            end
+            
+            table.insert(farms, newZone)
+            TriggerClientEvent('farming:farmCreated', -1, newZone)
+            TriggerClientEvent('esx:showNotification', source, Config.Messages['farm_zone_created'])
         end
     end)
 end)
@@ -341,6 +508,58 @@ function GeneratePlantPositions(centerCoords, size, spacing)
             table.insert(positions, plantCoords)
         end
     end
+    
+    return positions
+end
+
+-- Nouvelle fonction pour générer des points dans une zone circulaire
+function GenerateZonePoints(centerCoords, radius, density)
+    local positions = {}
+    local spacing
+    
+    -- Définir l'espacement selon la densité
+    if density == 'low' then
+        spacing = 8.0
+    elseif density == 'medium' then
+        spacing = 5.0
+    elseif density == 'high' then
+        spacing = 3.0
+    else
+        spacing = 5.0 -- par défaut
+    end
+    
+    -- Calculer le nombre de points sur le rayon
+    local steps = math.floor(radius / spacing)
+    
+    -- Générer des points en spirale dans le cercle
+    for r = spacing, radius, spacing do
+        local circumference = 2 * math.pi * r
+        local pointsOnCircle = math.max(1, math.floor(circumference / spacing))
+        
+        for i = 0, pointsOnCircle - 1 do
+            local angle = (i / pointsOnCircle) * 2 * math.pi
+            local x = centerCoords.x + math.cos(angle) * r
+            local y = centerCoords.y + math.sin(angle) * r
+            
+            -- Ajouter une petite variation aléatoire pour éviter l'alignement parfait
+            local randomOffset = spacing * 0.3
+            x = x + (math.random() - 0.5) * randomOffset
+            y = y + (math.random() - 0.5) * randomOffset
+            
+            table.insert(positions, {
+                x = x,
+                y = y,
+                z = centerCoords.z
+            })
+        end
+    end
+    
+    -- Ajouter un point au centre
+    table.insert(positions, {
+        x = centerCoords.x,
+        y = centerCoords.y,
+        z = centerCoords.z
+    })
     
     return positions
 end

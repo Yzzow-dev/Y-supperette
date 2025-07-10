@@ -107,6 +107,21 @@ RegisterCommand(Config.Commands.farmingMenu, function(source, args, rawCommand)
     end
 end, false)
 
+-- Nouvelle commande pour le créateur de zones
+RegisterCommand(Config.Commands.farmZoneMenu, function(source, args, rawCommand)
+    if Config.UsePermissions then
+        ESX.TriggerServerCallback('farming:hasPermission', function(hasPermission)
+            if hasPermission then
+                OpenZoneCreatorMenu()
+            else
+                ESX.ShowNotification(Config.Messages['no_permission'])
+            end
+        end)
+    else
+        OpenZoneCreatorMenu()
+    end
+end, false)
+
 RegisterCommand(Config.Commands.deleteFarm, function(source, args, rawCommand)
     if Config.UsePermissions then
         ESX.TriggerServerCallback('farming:hasPermission', function(hasPermission)
@@ -130,6 +145,15 @@ function OpenFarmingMenu()
     })
 end
 
+-- Nouvelle fonction pour ouvrir le créateur de zones
+function OpenZoneCreatorMenu()
+    SetNuiFocus(true, true)
+    SendNUIMessage({
+        type = 'openZoneMenu',
+        colors = Config.FarmZones.zoneColors
+    })
+end
+
 function CreateFarm(name, cropType, size, spacing)
     local playerPed = PlayerPedId()
     local coords = GetEntityCoords(playerPed)
@@ -149,6 +173,24 @@ function CreateFarm(name, cropType, size, spacing)
     }
     
     TriggerServerEvent('farming:createFarm', farmData)
+end
+
+-- Nouvelle fonction pour créer des zones personnalisées
+function CreateCustomZone(zoneData)
+    local playerPed = PlayerPedId()
+    local coords = GetEntityCoords(playerPed)
+    
+    -- Valider le rayon
+    if zoneData.radius < Config.FarmZones.minRadius or zoneData.radius > Config.FarmZones.maxRadius then
+        ESX.ShowNotification(Config.Messages['invalid_radius']:gsub('{min}', Config.FarmZones.minRadius):gsub('{max}', Config.FarmZones.maxRadius))
+        return
+    end
+    
+    -- Ajouter les coordonnées à la zone
+    zoneData.coords = coords
+    zoneData.owner = GetPlayerServerId(PlayerId())
+    
+    TriggerServerEvent('farming:createCustomZone', zoneData)
 end
 
 function DeleteNearestFarm()
@@ -334,6 +376,18 @@ RegisterNUICallback('createFarm', function(data, cb)
 end)
 
 RegisterNUICallback('closeMenu', function(data, cb)
+    SetNuiFocus(false, false)
+    cb('ok')
+end)
+
+-- Nouveaux callbacks pour les zones personnalisées
+RegisterNUICallback('createZone', function(data, cb)
+    CreateCustomZone(data)
+    SetNuiFocus(false, false)
+    cb('ok')
+end)
+
+RegisterNUICallback('closeZoneMenu', function(data, cb)
     SetNuiFocus(false, false)
     cb('ok')
 end)

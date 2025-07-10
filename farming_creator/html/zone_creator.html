@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zone Creator - Farming</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="zone_style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="zone-container" class="hidden">
+        <div class="zone-menu-container">
+            <div class="header">
+                <h1><i class="fas fa-map-marked-alt"></i> Créateur de Zones de Farm</h1>
+                <button id="zoneCloseBtn" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="content">
+                <form id="zoneForm" class="zone-form">
+                    <!-- Section Information de base -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-info-circle"></i> Informations de base</h3>
+                        
+                        <div class="form-group">
+                            <label for="zoneName">
+                                <i class="fas fa-tag"></i> Nom de la zone
+                            </label>
+                            <input type="text" id="zoneName" placeholder="Ex: Zone de Farm Nord" required>
+                            <small>Nom qui apparaîtra sur la carte et dans le jeu</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="zoneLabel">
+                                <i class="fas fa-label"></i> Label personnalisé
+                            </label>
+                            <input type="text" id="zoneLabel" placeholder="Ex: Ferme Communautaire">
+                            <small>Label affiché aux joueurs (optionnel)</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="zoneDescription">
+                                <i class="fas fa-align-left"></i> Description
+                            </label>
+                            <textarea id="zoneDescription" rows="3" placeholder="Description de la zone de farm..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Section Configuration spatiale -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-compass"></i> Configuration spatiale</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="zoneRadius">
+                                    <i class="fas fa-circle"></i> Rayon (mètres)
+                                </label>
+                                <input type="number" id="zoneRadius" min="10" max="200" value="50" required>
+                                <small>Taille de la zone de farm</small>
+                            </div>
+                            
+                            <div class="form-group half">
+                                <label for="zoneDensity">
+                                    <i class="fas fa-th"></i> Densité
+                                </label>
+                                <select id="zoneDensity" required>
+                                    <option value="low">Faible (espacement large)</option>
+                                    <option value="medium" selected>Moyenne (équilibré)</option>
+                                    <option value="high">Élevée (dense)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="zone-preview">
+                            <div class="preview-info">
+                                <span>Surface: <strong id="zoneArea">7854m²</strong></span>
+                                <span>Points estimés: <strong id="estimatedPoints">~50</strong></span>
+                            </div>
+                            <div class="radius-visual" id="radiusVisual">
+                                <div class="center-point"></div>
+                                <div class="radius-circle"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Apparence -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-palette"></i> Apparence</h3>
+                        
+                        <div class="form-group">
+                            <label for="zoneColor">
+                                <i class="fas fa-paint-brush"></i> Couleur de la zone
+                            </label>
+                            <div class="color-grid" id="colorGrid">
+                                <!-- Couleurs générées par JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="blipSprite">
+                                    <i class="fas fa-map-pin"></i> Icône sur la carte
+                                </label>
+                                <select id="blipSprite">
+                                    <option value="164">Ferme (par défaut)</option>
+                                    <option value="238">Plante</option>
+                                    <option value="140">Propriété</option>
+                                    <option value="430">Conteneur</option>
+                                    <option value="515">Boîte</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group half">
+                                <label for="showMarkers">
+                                    <i class="fas fa-eye"></i> Marqueurs visuels
+                                </label>
+                                <select id="showMarkers">
+                                    <option value="true" selected>Afficher les marqueurs</option>
+                                    <option value="false">Masquer les marqueurs</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Configuration des récoltes -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-seedling"></i> Configuration des récoltes</h3>
+                        
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="harvestItem">
+                                    <i class="fas fa-apple-alt"></i> Item de récolte
+                                </label>
+                                <input type="text" id="harvestItem" value="farmbox" placeholder="Ex: farmbox">
+                                <small>Item donné lors de la récolte</small>
+                            </div>
+                            
+                            <div class="form-group half">
+                                <label for="harvestAmount">
+                                    <i class="fas fa-hashtag"></i> Quantité par récolte
+                                </label>
+                                <input type="text" id="harvestAmount" value="1-3" placeholder="Ex: 2-5">
+                                <small>Format: min-max</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="growTime">
+                                    <i class="fas fa-clock"></i> Temps de croissance (min)
+                                </label>
+                                <input type="number" id="growTime" min="1" max="60" value="4">
+                                <small>Temps avant récolte possible</small>
+                            </div>
+                            
+                            <div class="form-group half">
+                                <label for="requireSeeds">
+                                    <i class="fas fa-seed"></i> Nécessite des graines
+                                </label>
+                                <select id="requireSeeds">
+                                    <option value="false" selected>Non (gratuit)</option>
+                                    <option value="true">Oui (avec graines)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Permissions -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-shield-alt"></i> Permissions et accès</h3>
+                        
+                        <div class="form-group">
+                            <label for="accessType">
+                                <i class="fas fa-users"></i> Type d'accès
+                            </label>
+                            <select id="accessType">
+                                <option value="public" selected>Public (tous les joueurs)</option>
+                                <option value="job">Réservé à un métier</option>
+                                <option value="gang">Réservé à un gang</option>
+                                <option value="whitelist">Liste blanche</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group conditional" id="jobSelector" style="display: none;">
+                            <label for="allowedJob">
+                                <i class="fas fa-briefcase"></i> Métier autorisé
+                            </label>
+                            <input type="text" id="allowedJob" placeholder="Ex: farmer">
+                        </div>
+                        
+                        <div class="form-group conditional" id="gangSelector" style="display: none;">
+                            <label for="allowedGang">
+                                <i class="fas fa-user-friends"></i> Gang autorisé
+                            </label>
+                            <input type="text" id="allowedGang" placeholder="Ex: ballas">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="zoneCancelBtn" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Créer la zone
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="info-panel">
+                <h3><i class="fas fa-info-circle"></i> Instructions</h3>
+                <ul>
+                    <li>Placez-vous au centre de la zone à créer</li>
+                    <li>Définissez le rayon selon la taille souhaitée</li>
+                    <li>Personnalisez l'apparence et les récoltes</li>
+                    <li>La zone sera créée autour de votre position</li>
+                    <li>Utilisez <code>/delfarm</code> pour supprimer une zone</li>
+                </ul>
+                
+                <div class="tips">
+                    <h4><i class="fas fa-lightbulb"></i> Conseils</h4>
+                    <ul>
+                        <li>Un rayon de 50m = ~7850m² de surface</li>
+                        <li>Densité élevée = plus de points mais plus lourd</li>
+                        <li>Les zones publiques sont accessibles à tous</li>
+                        <li>Testez avec un petit rayon avant d'agrandir</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="zone_script.js"></script>
+</body>
+</html>

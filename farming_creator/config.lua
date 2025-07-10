@@ -1,4 +1,4 @@
-Config = {}
+THIS SHOULD BE A LINTER ERRORConfig = {}
 
 -- Configuration générale
 Config.Locale = 'fr'
@@ -8,12 +8,32 @@ Config.RequiredPermission = 'admin'
 -- Commandes
 Config.Commands = {
     farmingMenu = 'farmingcreator',
-    deleteFarm = 'delfarm'
+    deleteFarm = 'delfarm',
+    farmZoneMenu = 'farmzone' -- Nouvelle commande pour créer des zones personnalisées
 }
 
 -- Distance d'interaction
 Config.InteractionDistance = 2.0
 Config.MarkerDistance = 20.0
+
+-- Nouvelles options pour les zones de farm personnalisées
+Config.FarmZones = {
+    enabled = true, -- Activer/désactiver les zones personnalisées
+    defaultRadius = 50.0, -- Rayon par défaut
+    maxRadius = 200.0, -- Rayon maximum
+    minRadius = 10.0, -- Rayon minimum
+    allowCustomLabels = true, -- Permettre les labels personnalisés
+    showZoneBlips = true, -- Afficher les blips pour les zones
+    zoneColors = { -- Couleurs disponibles pour les zones
+        {name = "Vert", color = 2},
+        {name = "Bleu", color = 3},
+        {name = "Jaune", color = 5},
+        {name = "Rouge", color = 6},
+        {name = "Orange", color = 17},
+        {name = "Violet", color = 27},
+        {name = "Rose", color = 7}
+    }
+}
 
 -- Types de cultures disponibles
 Config.CropTypes = {
@@ -142,6 +162,28 @@ Config.CropTypes = {
             r = 128, g = 0, b = 128, a = 100,
             scale = {x = 1.5, y = 1.5, z = 1.0}
         }
+    },
+    -- Nouveau type générique pour les zones personnalisées
+    ['custom'] = {
+        name = 'Zone personnalisée',
+        description = 'Zone de farm personnalisable',
+        growTime = 240000, -- 4 minutes par défaut
+        harvestAmount = {min = 1, max = 3},
+        harvestItem = 'farmbox', -- Item générique
+        seedItem = 'custom_seed',
+        seedPrice = 0,
+        sellPrice = 0,
+        model = 'prop_rub_boxpile_05',
+        blip = {
+            sprite = 164,
+            color = 2,
+            scale = 0.8
+        },
+        marker = {
+            type = 1,
+            r = 0, g = 255, b = 0, a = 100,
+            scale = {x = 1.0, y = 1.0, z = 1.0}
+        }
     }
 }
 
@@ -149,6 +191,7 @@ Config.CropTypes = {
 Config.Messages = {
     ['no_permission'] = 'Vous n\'avez pas la permission d\'utiliser cette commande.',
     ['farm_created'] = 'Ferme créée avec succès!',
+    ['farm_zone_created'] = 'Zone de farm créée avec succès!',
     ['farm_deleted'] = 'Ferme supprimée avec succès!',
     ['farm_not_found'] = 'Aucune ferme trouvée à cette position.',
     ['invalid_crop_type'] = 'Type de culture invalide.',
@@ -159,7 +202,9 @@ Config.Messages = {
     ['plant_success'] = 'Vous avez planté {crop}.',
     ['no_seeds'] = 'Vous n\'avez pas assez de graines.',
     ['no_space'] = 'Inventaire plein.',
-    ['farm_info'] = 'Nom: {name} | Type: {type} | Propriétaire: {owner}'
+    ['farm_info'] = 'Nom: {name} | Type: {type} | Propriétaire: {owner}',
+    ['invalid_radius'] = 'Le rayon doit être entre {min} et {max} mètres.',
+    ['zone_too_close'] = 'Une zone existe déjà trop proche de cette position.'
 }
 
 -- Interface NUI
