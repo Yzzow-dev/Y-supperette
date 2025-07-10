@@ -1,12 +1,16 @@
 let zoneColors = [];
 let selectedColor = null;
 let isZoneMenuOpen = false;
+let itemCategories = [];
+let currentTab = 'zone';
 
 // Éléments DOM
 const zoneContainer = document.getElementById('zone-container');
 const zoneForm = document.getElementById('zoneForm');
+const itemForm = document.getElementById('itemForm');
 const zoneCloseBtn = document.getElementById('zoneCloseBtn');
 const zoneCancelBtn = document.getElementById('zoneCancelBtn');
+const itemCancelBtn = document.getElementById('itemCancelBtn');
 
 // Champs du formulaire
 const zoneName = document.getElementById('zoneName');
@@ -32,10 +36,40 @@ const radiusVisual = document.getElementById('radiusVisual');
 const jobSelector = document.getElementById('jobSelector');
 const gangSelector = document.getElementById('gangSelector');
 
+// Éléments du formulaire d'items
+const itemName = document.getElementById('itemName');
+const itemLabel = document.getElementById('itemLabel');
+const itemDescription = document.getElementById('itemDescription');
+const itemCategory = document.getElementById('itemCategory');
+const itemWeight = document.getElementById('itemWeight');
+const itemRare = document.getElementById('itemRare');
+const itemUsable = document.getElementById('itemUsable');
+const itemRemovable = document.getElementById('itemRemovable');
+const itemShouldClose = document.getElementById('itemShouldClose');
+const itemUsageType = document.getElementById('itemUsageType');
+
+// Éléments de configuration d'usage
+const seedConfig = document.getElementById('seedConfig');
+const harvestConfig = document.getElementById('harvestConfig');
+const seedPrice = document.getElementById('seedPrice');
+const seedGrowTime = document.getElementById('seedGrowTime');
+const harvestSellPrice = document.getElementById('harvestSellPrice');
+const harvestQuantity = document.getElementById('harvestQuantity');
+
+// Éléments de prévisualisation d'item
+const previewLabel = document.getElementById('previewLabel');
+const previewName = document.getElementById('previewName');
+const previewWeight = document.getElementById('previewWeight');
+const previewRarity = document.getElementById('previewRarity');
+const previewDescription = document.getElementById('previewDescription');
+
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
     setupZoneEventListeners();
+    setupItemEventListeners();
+    setupTabSystem();
     updateZonePreview();
+    updateItemPreview();
 });
 
 // Configuration des event listeners

@@ -1,4 +1,4 @@
-THIS SHOULD BE A LINTER ERRORConfig = {}
+Config = {}
 
 -- Configuration générale
 Config.Locale = 'fr'
@@ -32,6 +32,37 @@ Config.FarmZones = {
         {name = "Orange", color = 17},
         {name = "Violet", color = 27},
         {name = "Rose", color = 7}
+    }
+}
+
+-- Configuration pour la création d'items personnalisés
+Config.ItemCreation = {
+    enabled = true, -- Activer/désactiver la création d'items
+    allowStaffCreate = true, -- Permettre aux staff de créer des items
+    autoInsertDatabase = true, -- Insertion automatique en BDD
+    discordLogs = {
+        enabled = true, -- Activer les logs Discord
+        webhook = "VOTRE_WEBHOOK_DISCORD_ICI", -- Webhook Discord
+        botName = "Farming Creator",
+        embedColor = 3447003, -- Couleur bleu
+        avatar = "https://i.imgur.com/farming_icon.png"
+    },
+    defaultItemSettings = {
+        weight = 1,
+        rare = 0,
+        can_remove = 1,
+        usable = 0,
+        shouldClose = 1,
+        combinable = nil,
+        description = ""
+    },
+    itemCategories = { -- Catégories d'items disponibles
+        {name = "Nourriture", value = "food"},
+        {name = "Graines", value = "seeds"},
+        {name = "Outils", value = "tools"},
+        {name = "Matériaux", value = "materials"},
+        {name = "Récoltes", value = "harvest"},
+        {name = "Autres", value = "other"}
     }
 }
 

@@ -14,12 +14,22 @@
         <div class="zone-menu-container">
             <div class="header">
                 <h1><i class="fas fa-map-marked-alt"></i> Créateur de Zones de Farm</h1>
+                <div class="header-tabs">
+                    <button class="tab-btn active" data-tab="zone">
+                        <i class="fas fa-map-marked-alt"></i> Zones
+                    </button>
+                    <button class="tab-btn" data-tab="items">
+                        <i class="fas fa-cube"></i> Items
+                    </button>
+                </div>
                 <button id="zoneCloseBtn" class="close-btn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
             <div class="content">
+                <!-- Onglet Zones -->
+                <div id="tab-zone" class="tab-content active">
                 <form id="zoneForm" class="zone-form">
                     <!-- Section Information de base -->
                     <div class="form-section">
@@ -208,6 +218,193 @@
                         </button>
                     </div>
                 </form>
+                </div>
+                
+                <!-- Onglet Items -->
+                <div id="tab-items" class="tab-content">
+                    <form id="itemForm" class="item-form">
+                        <!-- Section Information de l'item -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-cube"></i> Informations de l'item</h3>
+                            
+                            <div class="form-group">
+                                <label for="itemName">
+                                    <i class="fas fa-tag"></i> Nom de l'item (ID)
+                                </label>
+                                <input type="text" id="itemName" placeholder="Ex: super_carotte" required>
+                                <small>Nom technique de l'item (sans espaces, minuscules)</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="itemLabel">
+                                    <i class="fas fa-label"></i> Label affiché
+                                </label>
+                                <input type="text" id="itemLabel" placeholder="Ex: Super Carotte" required>
+                                <small>Nom affiché aux joueurs dans l'inventaire</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="itemDescription">
+                                    <i class="fas fa-align-left"></i> Description
+                                </label>
+                                <textarea id="itemDescription" rows="3" placeholder="Description de l'item..."></textarea>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label for="itemCategory">
+                                        <i class="fas fa-folder"></i> Catégorie
+                                    </label>
+                                    <select id="itemCategory" required>
+                                        <option value="">Sélectionnez une catégorie</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group half">
+                                    <label for="itemWeight">
+                                        <i class="fas fa-weight"></i> Poids
+                                    </label>
+                                    <input type="number" id="itemWeight" min="0" max="100" value="1" step="0.1">
+                                    <small>Poids de l'item (0-100)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Propriétés de l'item -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-cogs"></i> Propriétés de l'item</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label for="itemRare">
+                                        <i class="fas fa-gem"></i> Rareté
+                                    </label>
+                                    <select id="itemRare">
+                                        <option value="0">Commun</option>
+                                        <option value="1">Rare</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group half">
+                                    <label for="itemUsable">
+                                        <i class="fas fa-hand-pointer"></i> Utilisable
+                                    </label>
+                                    <select id="itemUsable">
+                                        <option value="0">Non</option>
+                                        <option value="1">Oui</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label for="itemRemovable">
+                                        <i class="fas fa-trash"></i> Supprimable
+                                    </label>
+                                    <select id="itemRemovable">
+                                        <option value="1">Oui</option>
+                                        <option value="0">Non</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group half">
+                                    <label for="itemShouldClose">
+                                        <i class="fas fa-times-circle"></i> Fermer inventaire
+                                    </label>
+                                    <select id="itemShouldClose">
+                                        <option value="1">Oui</option>
+                                        <option value="0">Non</option>
+                                    </select>
+                                    <small>Fermer l'inventaire après usage</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Usage en farming -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-seedling"></i> Usage en farming</h3>
+                            
+                            <div class="form-group">
+                                <label for="itemUsageType">
+                                    <i class="fas fa-tools"></i> Type d'usage
+                                </label>
+                                <select id="itemUsageType">
+                                    <option value="none">Aucun usage farming</option>
+                                    <option value="seed">Graine (pour planter)</option>
+                                    <option value="harvest">Récolte (obtenu en farmant)</option>
+                                    <option value="tool">Outil de farming</option>
+                                </select>
+                            </div>
+                            
+                            <div class="usage-config" id="seedConfig" style="display: none;">
+                                <div class="form-row">
+                                    <div class="form-group half">
+                                        <label for="seedPrice">
+                                            <i class="fas fa-dollar-sign"></i> Prix d'achat
+                                        </label>
+                                        <input type="number" id="seedPrice" min="0" value="25">
+                                    </div>
+                                    
+                                    <div class="form-group half">
+                                        <label for="seedGrowTime">
+                                            <i class="fas fa-clock"></i> Temps de croissance (min)
+                                        </label>
+                                        <input type="number" id="seedGrowTime" min="1" max="60" value="5">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="usage-config" id="harvestConfig" style="display: none;">
+                                <div class="form-row">
+                                    <div class="form-group half">
+                                        <label for="harvestSellPrice">
+                                            <i class="fas fa-coins"></i> Prix de vente
+                                        </label>
+                                        <input type="number" id="harvestSellPrice" min="0" value="10">
+                                    </div>
+                                    
+                                    <div class="form-group half">
+                                        <label for="harvestQuantity">
+                                            <i class="fas fa-hashtag"></i> Quantité par récolte
+                                        </label>
+                                        <input type="text" id="harvestQuantity" value="1-3" placeholder="Ex: 2-5">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Preview de l'item -->
+                        <div class="form-section">
+                            <h3><i class="fas fa-eye"></i> Aperçu de l'item</h3>
+                            
+                            <div class="item-preview">
+                                <div class="preview-card">
+                                    <div class="item-icon">
+                                        <i class="fas fa-cube"></i>
+                                    </div>
+                                    <div class="item-info">
+                                        <h4 id="previewLabel">Nom de l'item</h4>
+                                        <p id="previewName">item_name</p>
+                                        <div class="item-stats">
+                                            <span class="stat"><i class="fas fa-weight"></i> <span id="previewWeight">1</span>kg</span>
+                                            <span class="stat"><i class="fas fa-gem"></i> <span id="previewRarity">Commun</span></span>
+                                        </div>
+                                        <p class="item-desc" id="previewDescription">Description de l'item...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" id="itemCancelBtn" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Créer l'item
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
             
             <div class="info-panel">

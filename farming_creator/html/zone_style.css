@@ -1,5 +1,227 @@
 /* Zone Creator Specific Styles */
 
+/* Header Tabs */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.header-tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ccc;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+.tab-btn.active {
+    background: #4CAF50;
+    border-color: #4CAF50;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Item Form Styles */
+.item-form {
+    flex: 1;
+    padding: 0 20px;
+}
+
+.usage-config {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.usage-config.show {
+    display: block !important;
+}
+
+/* Item Preview Styles */
+.item-preview {
+    margin-top: 15px;
+}
+
+.preview-card {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.preview-card:hover {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.item-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #4CAF50, #2196F3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-info h4 {
+    margin: 0 0 5px 0;
+    color: #4CAF50;
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
+.item-info p {
+    margin: 0 0 8px 0;
+    color: #888;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+.item-stats {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 8px;
+}
+
+.item-stats .stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #ccc;
+    font-size: 0.85em;
+}
+
+.item-stats .stat i {
+    color: #4CAF50;
+}
+
+.item-desc {
+    color: #aaa !important;
+    font-family: inherit !important;
+    font-style: italic;
+    font-size: 0.9em !important;
+}
+
+/* Enhanced Input Styles for Items */
+.item-form input[type="text"]:invalid,
+.item-form input[type="number"]:invalid {
+    border-color: #f44336;
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.item-form input[type="text"]:valid,
+.item-form input[type="number"]:valid {
+    border-color: #4CAF50;
+}
+
+/* Item Name Validation */
+.item-name-validation {
+    margin-top: 5px;
+    font-size: 0.8em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.item-name-validation.valid {
+    color: #4CAF50;
+}
+
+.item-name-validation.invalid {
+    color: #f44336;
+}
+
+/* Category Icons */
+.category-icon {
+    margin-right: 8px;
+}
+
+/* Success Animation for Item Creation */
+.item-created-animation {
+    animation: itemCreated 0.5s ease;
+}
+
+@keyframes itemCreated {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(76, 175, 80, 0.5); }
+    100% { transform: scale(1); }
+}
+
+/* Discord Log Indicator */
+.discord-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #7289da;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.8em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.discord-indicator.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.discord-indicator.success {
+    background: #4CAF50;
+}
+
+.discord-indicator.error {
+    background: #f44336;
+}
+
 .zone-menu-container {
     width: 90vw;
     max-width: 1000px;
