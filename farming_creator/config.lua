@@ -1,4 +1,4 @@
-Config = {}
+THIS SHOULD BE A LINTER ERRORConfig = {}
 
 -- Configuration générale
 Config.Locale = 'fr'
