@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farming Creator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="container" class="hidden">
+        <div class="menu-container">
+            <div class="header">
+                <h1><i class="fas fa-seedling"></i> Farming Creator</h1>
+                <button id="closeBtn" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="content">
+                <form id="farmForm" class="farm-form">
+                    <div class="form-group">
+                        <label for="farmName">
+                            <i class="fas fa-tag"></i> Nom de la ferme
+                        </label>
+                        <input type="text" id="farmName" placeholder="Ex: Ferme des Orangers" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cropType">
+                            <i class="fas fa-apple-alt"></i> Type de culture
+                        </label>
+                        <select id="cropType" required>
+                            <option value="">Sélectionnez une culture</option>
+                        </select>
+                    </div>
+                    
+                    <div class="crop-preview" id="cropPreview">
+                        <div class="preview-header">
+                            <h3 id="previewTitle">Aperçu de la culture</h3>
+                        </div>
+                        <div class="preview-content">
+                            <div class="preview-stats">
+                                <div class="stat">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Temps de croissance: <strong id="growTime">-</strong></span>
+                                </div>
+                                <div class="stat">
+                                    <i class="fas fa-coins"></i>
+                                    <span>Prix des graines: <strong id="seedPrice">-</strong>$</span>
+                                </div>
+                                <div class="stat">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    <span>Prix de vente: <strong id="sellPrice">-</strong>$</span>
+                                </div>
+                                <div class="stat">
+                                    <i class="fas fa-harvest"></i>
+                                    <span>Récolte: <strong id="harvestAmount">-</strong></span>
+                                </div>
+                            </div>
+                            <div class="preview-description" id="previewDescription">
+                                Sélectionnez une culture pour voir les détails
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="farmSize">
+                                <i class="fas fa-expand"></i> Taille (NxN)
+                            </label>
+                            <input type="number" id="farmSize" min="3" max="15" value="5" required>
+                            <small>Nombre de plantes par côté (3-15)</small>
+                        </div>
+                        
+                        <div class="form-group half">
+                            <label for="farmSpacing">
+                                <i class="fas fa-arrows-alt-h"></i> Espacement
+                            </label>
+                            <input type="number" id="farmSpacing" min="1" max="5" step="0.5" value="2" required>
+                            <small>Distance entre les plantes (mètres)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="size-preview">
+                        <div class="size-info">
+                            <span>Nombre total de plantes: <strong id="totalPlants">25</strong></span>
+                            <span>Surface approximative: <strong id="totalArea">100m²</strong></span>
+                        </div>
+                        <div class="grid-preview" id="gridPreview">
+                            <!-- Grid sera généré par JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="cancelBtn" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Créer la ferme
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="info-panel">
+                <h3><i class="fas fa-info-circle"></i> Instructions</h3>
+                <ul>
+                    <li>Placez-vous à l'endroit où vous voulez créer la ferme</li>
+                    <li>Choisissez le type de culture et les paramètres</li>
+                    <li>La ferme sera créée autour de votre position actuelle</li>
+                    <li>Utilisez <code>/giveseed [type] [quantité]</code> pour obtenir des graines</li>
+                    <li>Approchez-vous des marqueurs pour planter/récolter</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
