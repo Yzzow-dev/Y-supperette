@@ -27,7 +27,10 @@ files {
     'html/script.js',
     'html/zone_creator.html',
     'html/zone_style.css',
-    'html/zone_script.js'
+    'html/zone_script.js',
+    'html/item_creator.html',
+    'html/item_creator.css',
+    'html/item_creator.js'
 }
 
-ui_page 'html/index.html'
+ui_page 'html/item_creator.html'
