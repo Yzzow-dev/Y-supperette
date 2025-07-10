@@ -150,7 +150,8 @@ function OpenZoneCreatorMenu()
     SetNuiFocus(true, true)
     SendNUIMessage({
         type = 'openZoneMenu',
-        colors = Config.FarmZones.zoneColors
+        colors = Config.FarmZones.zoneColors,
+        categories = Config.ItemCreation.itemCategories
     })
 end
 
@@ -191,6 +192,24 @@ function CreateCustomZone(zoneData)
     zoneData.owner = GetPlayerServerId(PlayerId())
     
     TriggerServerEvent('farming:createCustomZone', zoneData)
+end
+
+-- Nouvelle fonction pour créer des items personnalisés
+function CreateCustomItem(itemData)
+    if not Config.ItemCreation.enabled then
+        ESX.ShowNotification('La création d\'items est désactivée')
+        return
+    end
+    
+    if not Config.ItemCreation.allowStaffCreate then
+        ESX.ShowNotification('Les staff ne peuvent pas créer d\'items')
+        return
+    end
+    
+    -- Ajouter l'ID du joueur
+    itemData.creator = GetPlayerServerId(PlayerId())
+    
+    TriggerServerEvent('farming:createCustomItem', itemData)
 end
 
 function DeleteNearestFarm()
@@ -384,6 +403,11 @@ end)
 RegisterNUICallback('createZone', function(data, cb)
     CreateCustomZone(data)
     SetNuiFocus(false, false)
+    cb('ok')
+end)
+
+RegisterNUICallback('createItem', function(data, cb)
+    CreateCustomItem(data)
     cb('ok')
 end)
 

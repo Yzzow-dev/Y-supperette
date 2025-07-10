@@ -102,13 +102,62 @@ function setupZoneEventListeners() {
     zoneContainer.addEventListener('click', closeZoneMenu);
 }
 
+// Configuration des event listeners pour les items
+function setupItemEventListeners() {
+    // Fermeture du menu
+    itemCancelBtn.addEventListener('click', closeZoneMenu);
+    
+    // Soumission du formulaire d'item
+    itemForm.addEventListener('submit', handleItemFormSubmit);
+    
+    // Mise à jour de l'aperçu en temps réel
+    itemName.addEventListener('input', updateItemPreview);
+    itemLabel.addEventListener('input', updateItemPreview);
+    itemDescription.addEventListener('input', updateItemPreview);
+    itemWeight.addEventListener('input', updateItemPreview);
+    itemRare.addEventListener('change', updateItemPreview);
+    
+    // Gestion du type d'usage farming
+    itemUsageType.addEventListener('change', updateUsageConfig);
+    
+    // Validation du nom de l'item
+    itemName.addEventListener('input', validateItemName);
+}
+
+// Configuration du système d'onglets
+function setupTabSystem() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetTab = this.dataset.tab;
+            
+            // Mettre à jour les boutons actifs
+            tabBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Mettre à jour le contenu actif
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            const targetContent = document.getElementById(`tab-${targetTab}`);
+            if (targetContent) {
+                targetContent.classList.add('active');
+                currentTab = targetTab;
+            }
+        });
+    });
+}
+
 // Communication avec FiveM
 window.addEventListener('message', function(event) {
     const data = event.data;
     
     switch(data.type) {
         case 'openZoneMenu':
-            openZoneMenu(data.colors);
+            openZoneMenu(data.colors, data.categories);
             break;
         case 'closeZoneMenu':
             closeZoneMenu();
@@ -117,7 +166,7 @@ window.addEventListener('message', function(event) {
 });
 
 // Ouverture du menu des zones
-function openZoneMenu(colors) {
+function openZoneMenu(colors, categories) {
     zoneColors = colors || [
         {name: "Vert", color: 2},
         {name: "Bleu", color: 3},
@@ -128,14 +177,29 @@ function openZoneMenu(colors) {
         {name: "Rose", color: 7}
     ];
     
+    itemCategories = categories || [
+        {name: "Nourriture", value: "food"},
+        {name: "Graines", value: "seeds"},
+        {name: "Outils", value: "tools"},
+        {name: "Matériaux", value: "materials"},
+        {name: "Récoltes", value: "harvest"},
+        {name: "Autres", value: "other"}
+    ];
+    
     createColorGrid();
+    populateItemCategories();
     updateZonePreview();
+    updateItemPreview();
     zoneContainer.classList.remove('hidden');
     isZoneMenuOpen = true;
     
-    // Focus sur le premier champ
+    // Focus sur le premier champ selon l'onglet actif
     setTimeout(() => {
-        zoneName.focus();
+        if (currentTab === 'zone') {
+            zoneName.focus();
+        } else {
+            itemName.focus();
+        }
     }, 100);
 }
 
@@ -486,3 +550,251 @@ function setupRealTimeValidation() {
 
 // Appliquer la validation en temps réel
 document.addEventListener('DOMContentLoaded', setupRealTimeValidation);
+
+// ================================
+// FONCTIONS POUR LA GESTION DES ITEMS
+// ================================
+
+// Remplir la liste des catégories d'items
+function populateItemCategories() {
+    itemCategory.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
+    
+    itemCategories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.value;
+        option.textContent = category.name;
+        itemCategory.appendChild(option);
+    });
+}
+
+// Mise à jour de l'aperçu de l'item
+function updateItemPreview() {
+    const name = itemName.value.trim() || 'item_name';
+    const label = itemLabel.value.trim() || 'Nom de l\'item';
+    const description = itemDescription.value.trim() || 'Description de l\'item...';
+    const weight = parseFloat(itemWeight.value) || 1;
+    const rare = parseInt(itemRare.value) || 0;
+    
+    previewName.textContent = name;
+    previewLabel.textContent = label;
+    previewDescription.textContent = description;
+    previewWeight.textContent = weight;
+    previewRarity.textContent = rare === 1 ? 'Rare' : 'Commun';
+}
+
+// Validation du nom de l'item
+function validateItemName() {
+    const name = itemName.value.trim();
+    let validation = itemName.parentNode.querySelector('.item-name-validation');
+    
+    if (!validation) {
+        validation = document.createElement('div');
+        validation.className = 'item-name-validation';
+        itemName.parentNode.appendChild(validation);
+    }
+    
+    if (name === '') {
+        validation.style.display = 'none';
+        return;
+    }
+    
+    // Regex pour nom d'item valide (lettres, chiffres, underscore)
+    const validRegex = /^[a-z0-9_]+$/;
+    
+    if (validRegex.test(name) && name.length >= 3) {
+        validation.innerHTML = '<i class="fas fa-check"></i> Nom d\'item valide';
+        validation.className = 'item-name-validation valid';
+        itemName.style.borderColor = '#4CAF50';
+    } else {
+        validation.innerHTML = '<i class="fas fa-times"></i> Nom invalide (lettres minuscules, chiffres, underscore uniquement)';
+        validation.className = 'item-name-validation invalid';
+        itemName.style.borderColor = '#f44336';
+    }
+    
+    validation.style.display = 'flex';
+}
+
+// Mise à jour de la configuration d'usage
+function updateUsageConfig() {
+    const usageType = itemUsageType.value;
+    
+    // Cacher toutes les configurations
+    seedConfig.style.display = 'none';
+    harvestConfig.style.display = 'none';
+    
+    // Afficher la configuration appropriée
+    if (usageType === 'seed') {
+        seedConfig.style.display = 'block';
+    } else if (usageType === 'harvest') {
+        harvestConfig.style.display = 'block';
+    }
+}
+
+// Gestion de la soumission du formulaire d'item
+function handleItemFormSubmit(e) {
+    e.preventDefault();
+    
+    // Validation des champs
+    const name = itemName.value.trim();
+    const label = itemLabel.value.trim();
+    
+    if (!name) {
+        showZoneError('Veuillez entrer un nom pour l\'item');
+        return;
+    }
+    
+    if (!label) {
+        showZoneError('Veuillez entrer un label pour l\'item');
+        return;
+    }
+    
+    // Validation du nom d'item
+    const validRegex = /^[a-z0-9_]+$/;
+    if (!validRegex.test(name) || name.length < 3) {
+        showZoneError('Le nom de l\'item doit contenir au moins 3 caractères (lettres minuscules, chiffres, underscore)');
+        return;
+    }
+    
+    if (!itemCategory.value) {
+        showZoneError('Veuillez sélectionner une catégorie');
+        return;
+    }
+    
+    // Validation conditionnelle pour les quantités de récolte
+    if (itemUsageType.value === 'harvest') {
+        const quantityRegex = /^\d+-\d+$/;
+        if (!quantityRegex.test(harvestQuantity.value)) {
+            showZoneError('Format de quantité invalide. Utilisez le format: min-max (ex: 2-5)');
+            return;
+        }
+    }
+    
+    // Préparer les données de l'item
+    const itemData = {
+        name: name,
+        label: label,
+        description: itemDescription.value.trim(),
+        category: itemCategory.value,
+        weight: parseFloat(itemWeight.value) || 1,
+        rare: parseInt(itemRare.value) || 0,
+        usable: parseInt(itemUsable.value) || 0,
+        can_remove: parseInt(itemRemovable.value) || 1,
+        shouldClose: parseInt(itemShouldClose.value) || 1,
+        usageType: itemUsageType.value
+    };
+    
+    // Ajouter les données spécifiques selon le type d'usage
+    if (itemUsageType.value === 'seed') {
+        itemData.farmingData = {
+            type: 'seed',
+            price: parseInt(seedPrice.value) || 25,
+            growTime: parseInt(seedGrowTime.value) * 60000 // Convertir en millisecondes
+        };
+    } else if (itemUsageType.value === 'harvest') {
+        const [minHarvest, maxHarvest] = harvestQuantity.value.split('-').map(n => parseInt(n));
+        itemData.farmingData = {
+            type: 'harvest',
+            sellPrice: parseInt(harvestSellPrice.value) || 10,
+            harvestAmount: {
+                min: minHarvest,
+                max: maxHarvest
+            }
+        };
+    }
+    
+    // Ajouter l'état de chargement
+    const submitBtn = itemForm.querySelector('.btn-primary');
+    submitBtn.classList.add('loading');
+    submitBtn.textContent = 'Création en cours...';
+    
+    // Envoyer les données à FiveM
+    fetch(`https://${GetParentResourceName()}/createItem`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(itemData)
+    }).then(response => {
+        if (response.ok) {
+            showZoneSuccess('Item créé avec succès!');
+            showDiscordIndicator('Item envoyé vers Discord', 'success');
+            
+            // Animation de succès
+            const previewCard = document.querySelector('.preview-card');
+            previewCard.classList.add('item-created-animation');
+            
+            setTimeout(() => {
+                previewCard.classList.remove('item-created-animation');
+                resetItemForm();
+            }, 1500);
+        } else {
+            showZoneError('Erreur lors de la création de l\'item');
+        }
+    }).catch(error => {
+        console.error('Erreur:', error);
+        showZoneError('Erreur de communication avec le serveur');
+    }).finally(() => {
+        // Retirer l'état de chargement
+        submitBtn.classList.remove('loading');
+        submitBtn.innerHTML = '<i class="fas fa-plus"></i> Créer l\'item';
+    });
+}
+
+// Afficher l'indicateur Discord
+function showDiscordIndicator(message, type = 'info') {
+    // Supprimer l'indicateur existant s'il y en a un
+    const existingIndicator = document.querySelector('.discord-indicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+    
+    const indicator = document.createElement('div');
+    indicator.className = `discord-indicator ${type}`;
+    indicator.innerHTML = `<i class="fab fa-discord"></i><span>${message}</span>`;
+    
+    document.body.appendChild(indicator);
+    
+    // Afficher l'indicateur
+    setTimeout(() => {
+        indicator.classList.add('show');
+    }, 100);
+    
+    // Masquer après 3 secondes
+    setTimeout(() => {
+        indicator.classList.remove('show');
+        setTimeout(() => {
+            indicator.remove();
+        }, 300);
+    }, 3000);
+}
+
+// Réinitialiser le formulaire d'item
+function resetItemForm() {
+    itemForm.reset();
+    itemWeight.value = 1;
+    itemRare.value = 0;
+    itemUsable.value = 0;
+    itemRemovable.value = 1;
+    itemShouldClose.value = 1;
+    itemUsageType.value = 'none';
+    seedPrice.value = 25;
+    seedGrowTime.value = 5;
+    harvestSellPrice.value = 10;
+    harvestQuantity.value = '1-3';
+    
+    // Cacher les configurations d'usage
+    seedConfig.style.display = 'none';
+    harvestConfig.style.display = 'none';
+    
+    // Supprimer la validation du nom
+    const validation = itemName.parentNode.querySelector('.item-name-validation');
+    if (validation) {
+        validation.remove();
+    }
+    
+    // Réinitialiser les styles
+    itemName.style.borderColor = '';
+    
+    // Mettre à jour l'aperçu
+    updateItemPreview();
+}
