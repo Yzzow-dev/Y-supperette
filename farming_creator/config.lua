@@ -5,6 +5,31 @@ Config.Locale = 'fr'
 Config.UsePermissions = true
 Config.RequiredPermission = 'admin'
 
+-- Configuration du Framework
+Config.Framework = 'esx' -- 'esx', 'esx_legacy', 'qbcore'
+
+-- Configuration spécifique aux frameworks
+Config.FrameworkSettings = {
+    esx = {
+        resource_name = 'es_extended',
+        shared_object = 'esx:getSharedObject',
+        inventory_system = 'default', -- 'default', 'ox_inventory', 'qs_inventory'
+        notification_type = 'esx' -- 'esx', 'mythic', 'ox_lib'
+    },
+    esx_legacy = {
+        resource_name = 'es_extended',
+        shared_object = 'esx:getSharedObject',
+        inventory_system = 'default',
+        notification_type = 'esx'
+    },
+    qbcore = {
+        resource_name = 'qb-core',
+        shared_object = 'QBCore:GetObject',
+        inventory_system = 'default', -- 'default', 'ox_inventory', 'qs_inventory', 'lj_inventory'
+        notification_type = 'qbcore' -- 'qbcore', 'mythic', 'ox_lib'
+    }
+}
+
 -- Configuration Discord Logs
 Config.Discord = {
     enabled = true,

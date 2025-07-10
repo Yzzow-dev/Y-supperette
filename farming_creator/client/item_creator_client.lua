@@ -1,16 +1,7 @@
 -- ====================================
 -- FARMING CREATOR - ITEM CREATOR CLIENT
 -- ====================================
--- Interface client pour la création d'items personnalisés
-
-local ESX = nil
-
-Citizen.CreateThread(function()
-    while ESX == nil do
-        TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-        Citizen.Wait(0)
-    end
-end)
+-- Interface client pour la création d'items personnalisés compatible multi-framework
 
 -- Variables locales
 local isItemCreatorOpen = false
@@ -41,7 +32,12 @@ end)
 RegisterNetEvent('farming:itemCreated')
 AddEventHandler('farming:itemCreated', function(itemData)
     -- Notification pour tous les joueurs qu'un nouvel item a été créé
-    ESX.ShowNotification('📦 Nouvel item créé: ' .. itemData.label .. ' par ' .. itemData.creator)
+    Framework.ShowNotification('📦 Nouvel item créé: ' .. itemData.label .. ' par ' .. itemData.creator)
+end)
+
+RegisterNetEvent('farming:receiveNotification')
+AddEventHandler('farming:receiveNotification', function(message, type, duration)
+    Framework.ShowNotification(message, type, duration)
 end)
 
 -- Fonction pour ouvrir le menu de création d'item
@@ -53,9 +49,9 @@ function OpenItemCreatorMenu()
         {label = '❌ Fermer', value = 'close'}
     }
     
-    ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'item_creator_menu', {
-        title    = 'Créateur d\'Items',
-        align    = 'top-left',
+    Framework.OpenMenu({
+        name = 'item_creator_menu',
+        title = 'Créateur d\'Items',
         elements = elements
     }, function(data, menu)
         if data.current.value == 'create_item' then
@@ -83,9 +79,9 @@ function OpenItemSuggestionMenu()
         {label = '❌ Fermer', value = 'close'}
     }
     
-    ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'item_suggestion_menu', {
-        title    = 'Suggestions d\'Items',
-        align    = 'top-left',
+    Framework.OpenMenu({
+        name = 'item_suggestion_menu',
+        title = 'Suggestions d\'Items',
         elements = elements
     }, function(data, menu)
         if data.current.value == 'suggest_item' then
@@ -106,38 +102,42 @@ end
 function ShowItemCreationForm()
     isItemCreatorOpen = true
     
-    ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'item_name_input', {
+    Framework.OpenDialog({
+        name = 'item_name_input',
         title = 'Nom de l\'item (sans espaces ni caractères spéciaux)'
     }, function(data, menu)
         local itemName = data.value
         if itemName == nil or itemName == '' then
-            ESX.ShowNotification('~r~Le nom de l\'item est requis!')
+            Framework.ShowNotification('Le nom de l\'item est requis!', 'error')
             isItemCreatorOpen = false
             return
         end
         
         menu.close()
         
-        ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'item_label_input', {
+        Framework.OpenDialog({
+            name = 'item_label_input',
             title = 'Label de l\'item (nom affiché)'
         }, function(data2, menu2)
             local itemLabel = data2.value
             if itemLabel == nil or itemLabel == '' then
-                ESX.ShowNotification('~r~Le label de l\'item est requis!')
+                Framework.ShowNotification('Le label de l\'item est requis!', 'error')
                 isItemCreatorOpen = false
                 return
             end
             
             menu2.close()
             
-            ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'item_weight_input', {
+            Framework.OpenDialog({
+                name = 'item_weight_input',
                 title = 'Poids de l\'item (nombre)'
             }, function(data3, menu3)
                 local itemWeight = tonumber(data3.value) or 1
                 
                 menu3.close()
                 
-                ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'item_description_input', {
+                Framework.OpenDialog({
+                    name = 'item_description_input',
                     title = 'Description de l\'item (optionnel)'
                 }, function(data4, menu4)
                     local itemDescription = data4.value or ""
@@ -184,31 +184,34 @@ end
 function ShowItemSuggestionForm()
     isItemCreatorOpen = true
     
-    ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'suggest_item_name_input', {
+    Framework.OpenDialog({
+        name = 'suggest_item_name_input',
         title = 'Nom de l\'item suggéré'
     }, function(data, menu)
         local itemName = data.value
         if itemName == nil or itemName == '' then
-            ESX.ShowNotification('~r~Le nom de l\'item est requis!')
+            Framework.ShowNotification('Le nom de l\'item est requis!', 'error')
             isItemCreatorOpen = false
             return
         end
         
         menu.close()
         
-        ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'suggest_item_label_input', {
+        Framework.OpenDialog({
+            name = 'suggest_item_label_input',
             title = 'Label de l\'item suggéré'
         }, function(data2, menu2)
             local itemLabel = data2.value
             if itemLabel == nil or itemLabel == '' then
-                ESX.ShowNotification('~r~Le label de l\'item est requis!')
+                Framework.ShowNotification('Le label de l\'item est requis!', 'error')
                 isItemCreatorOpen = false
                 return
             end
             
             menu2.close()
             
-            ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'suggest_item_description_input', {
+            Framework.OpenDialog({
+                name = 'suggest_item_description_input',
                 title = 'Description/Justification de la suggestion'
             }, function(data3, menu3)
                 local itemDescription = data3.value or ""
@@ -248,7 +251,7 @@ end
 
 -- Fonction pour afficher mes items créés
 function ShowMyItems()
-    ESX.TriggerServerCallback('farming:getCustomItems', function(items)
+    Framework.TriggerServerCallback('farming:getCustomItems', function(items)
         local elements = {}
         
         if #items == 0 then
@@ -265,9 +268,9 @@ function ShowMyItems()
         
         table.insert(elements, {label = '❌ Retour', value = 'back'})
         
-        ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'my_items_menu', {
-            title    = 'Mes Items Créés (' .. #items .. ')',
-            align    = 'top-left',
+        Framework.OpenMenu({
+            name = 'my_items_menu',
+            title = 'Mes Items Créés (' .. #items .. ')',
             elements = elements
         }, function(data, menu)
             if data.current.value == 'back' then
@@ -301,12 +304,12 @@ function ShowItemDetails(item)
         detailsText = detailsText .. '\nDescription: ' .. item.description
     end
     
-    ESX.ShowNotification(detailsText, true, true, 140)
+    Framework.ShowNotification(detailsText, 'info', 7000)
 end
 
 -- Fonction pour afficher les statistiques
 function ShowItemStats()
-    ESX.TriggerServerCallback('farming:getCustomItems', function(items)
+    Framework.TriggerServerCallback('farming:getCustomItems', function(items)
         local totalItems = #items
         local totalWeight = 0
         local rareItems = 0
@@ -326,13 +329,13 @@ function ShowItemStats()
             usableItems
         )
         
-        ESX.ShowNotification(statsText, true, true, 140)
+        Framework.ShowNotification(statsText, 'info', 7000)
     end)
 end
 
 -- Fonction pour afficher mes suggestions
 function ShowMySuggestions()
-    ESX.TriggerServerCallback('farming:getItemSuggestions', function(suggestions)
+    Framework.TriggerServerCallback('farming:getItemSuggestions', function(suggestions)
         local elements = {}
         
         if #suggestions == 0 then
@@ -349,9 +352,9 @@ function ShowMySuggestions()
         
         table.insert(elements, {label = '❌ Retour', value = 'back'})
         
-        ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'suggestions_menu', {
-            title    = 'Suggestions d\'Items (' .. #suggestions .. ')',
-            align    = 'top-left',
+        Framework.OpenMenu({
+            name = 'suggestions_menu',
+            title = 'Suggestions d\'Items (' .. #suggestions .. ')',
             elements = elements
         }, function(data, menu)
             if data.current.value == 'back' then
@@ -376,9 +379,9 @@ function OpenItemManagementMenu()
         {label = '❌ Fermer', value = 'close'}
     }
     
-    ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'item_management_menu', {
-        title    = 'Gestion des Items',
-        align    = 'top-left',
+    Framework.OpenMenu({
+        name = 'item_management_menu',
+        title = 'Gestion des Items',
         elements = elements
     }, function(data, menu)
         if data.current.value == 'all_items' then
@@ -400,7 +403,7 @@ end
 
 -- Fonction pour afficher tous les items
 function ShowAllItems()
-    ESX.TriggerServerCallback('farming:getCustomItems', function(items)
+    Framework.TriggerServerCallback('farming:getCustomItems', function(items)
         local elements = {}
         
         if #items == 0 then
@@ -417,9 +420,9 @@ function ShowAllItems()
         
         table.insert(elements, {label = '❌ Retour', value = 'back'})
         
-        ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'all_items_menu', {
-            title    = 'Tous les Items (' .. #items .. ')',
-            align    = 'top-left',
+        Framework.OpenMenu({
+            name = 'all_items_menu',
+            title = 'Tous les Items (' .. #items .. ')',
             elements = elements
         }, function(data, menu)
             if data.current.value == 'back' then
@@ -436,7 +439,7 @@ end
 
 -- Fonction pour afficher les suggestions en attente
 function ShowPendingSuggestions()
-    ESX.TriggerServerCallback('farming:getItemSuggestions', function(suggestions)
+    Framework.TriggerServerCallback('farming:getItemSuggestions', function(suggestions)
         local elements = {}
         
         if #suggestions == 0 then
@@ -453,9 +456,9 @@ function ShowPendingSuggestions()
         
         table.insert(elements, {label = '❌ Retour', value = 'back'})
         
-        ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'pending_suggestions_menu', {
-            title    = 'Suggestions en Attente (' .. #suggestions .. ')',
-            align    = 'top-left',
+        Framework.OpenMenu({
+            name = 'pending_suggestions_menu',
+            title = 'Suggestions en Attente (' .. #suggestions .. ')',
             elements = elements
         }, function(data, menu)
             if data.current.value == 'back' then
@@ -472,8 +475,8 @@ end
 
 -- Fonction pour afficher les statistiques globales
 function ShowGlobalStats()
-    ESX.TriggerServerCallback('farming:getCustomItems', function(items)
-        ESX.TriggerServerCallback('farming:getItemSuggestions', function(suggestions)
+    Framework.TriggerServerCallback('farming:getCustomItems', function(items)
+        Framework.TriggerServerCallback('farming:getItemSuggestions', function(suggestions)
             local totalItems = #items
             local totalSuggestions = #suggestions
             local totalWeight = 0
@@ -497,7 +500,7 @@ function ShowGlobalStats()
                 uniqueCreators
             )
             
-            ESX.ShowNotification(statsText, true, true, 140)
+            Framework.ShowNotification(statsText, 'info', 7000)
         end)
     end)
 end

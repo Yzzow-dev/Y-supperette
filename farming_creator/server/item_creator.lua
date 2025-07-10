@@ -1,10 +1,7 @@
 -- ====================================
 -- FARMING CREATOR - ITEM CREATOR SYSTEM
 -- ====================================
--- Système de création d'items personnalisés avec logs Discord
-
-local ESX = nil
-TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+-- Système de création d'items personnalisés avec logs Discord compatible multi-framework
 
 -- Variables locales
 local customItems = {}
@@ -126,32 +123,32 @@ end
 RegisterServerEvent('farming:createCustomItem')
 AddEventHandler('farming:createCustomItem', function(itemData)
     local source = source
-    local xPlayer = ESX.GetPlayerFromId(source)
+    local xPlayer = Framework.GetPlayer(source)
     
     if not xPlayer then return end
     
     -- Vérifier si le système est activé
     if not Config.CustomItems.enabled then
-        TriggerClientEvent('esx:showNotification', source, Config.Messages['item_system_disabled'])
+        TriggerEvent('farming:sendNotification', source, Config.Messages['item_system_disabled'])
         return
     end
     
     -- Vérifier les permissions
     if Config.UsePermissions then
-        if not xPlayer.getGroup() or xPlayer.getGroup() ~= Config.RequiredPermission then
-            TriggerClientEvent('esx:showNotification', source, Config.Messages['no_permission'])
+        if not Framework.HasPermission(xPlayer, Config.RequiredPermission) then
+            TriggerEvent('farming:sendNotification', source, Config.Messages['no_permission'])
             return
         end
     end
     
     -- Validation des données
     if not itemData.name or itemData.name == "" then
-        TriggerClientEvent('esx:showNotification', source, Config.Messages['item_name_required'])
+        TriggerEvent('farming:sendNotification', source, Config.Messages['item_name_required'])
         return
     end
     
     if not itemData.label or itemData.label == "" then
-        TriggerClientEvent('esx:showNotification', source, Config.Messages['item_label_required'])
+        TriggerEvent('farming:sendNotification', source, Config.Messages['item_label_required'])
         return
     end
     
@@ -160,14 +157,15 @@ AddEventHandler('farming:createCustomItem', function(itemData)
     
     -- Vérifier si l'item existe déjà
     if ItemExists(itemData.name) or CustomItemExists(itemData.name) then
-        TriggerClientEvent('esx:showNotification', source, Config.Messages['item_already_exists'])
+        TriggerEvent('farming:sendNotification', source, Config.Messages['item_already_exists'])
         return
     end
     
     -- Vérifier la limite d'items par joueur
-    local currentCount = GetPlayerItemCount(xPlayer.identifier)
+    local playerIdentifier = Framework.GetPlayerIdentifier(xPlayer)
+    local currentCount = GetPlayerItemCount(playerIdentifier)
     if currentCount >= Config.CustomItems.maxItemsPerPlayer then
-        TriggerClientEvent('esx:showNotification', source, 
+        TriggerEvent('farming:sendNotification', source, 
             Config.Messages['max_items_reached']:gsub('{max}', Config.CustomItems.maxItemsPerPlayer))
         return
     end
@@ -181,6 +179,9 @@ AddEventHandler('farming:createCustomItem', function(itemData)
     itemData.description = itemData.description or ""
     
     -- Insérer l'item personnalisé dans la table de tracking
+    local playerIdentifier = Framework.GetPlayerIdentifier(xPlayer)
+    local playerName = Framework.GetPlayerName(xPlayer)
+    
     MySQL.Async.insert([[
         INSERT INTO custom_items_creator 
         (item_name, item_label, weight, rare, can_remove, stackable, usable, description, creator_identifier, creator_name) 
@@ -194,8 +195,8 @@ AddEventHandler('farming:createCustomItem', function(itemData)
         itemData.stackable,
         itemData.usable,
         itemData.description,
-        xPlayer.identifier,
-        xPlayer.getName()
+        playerIdentifier,
+        playerName
     }, function(insertId)
         if insertId then
             -- Si l'insertion automatique est activée, insérer dans la table items d'ESX
@@ -213,7 +214,7 @@ AddEventHandler('farming:createCustomItem', function(itemData)
                     if itemInsertId then
                         -- Log dans la console
                         if Config.CustomItems.logToConsole then
-                            print('[Farming Creator] Item créé et inséré dans la table de données: ' .. itemData.name .. ' par ' .. xPlayer.getName())
+                            Framework.Log('Item créé et inséré dans la table de données: ' .. itemData.name .. ' par ' .. playerName)
                         end
                         
                         -- Ajouter à la liste locale
@@ -227,12 +228,12 @@ AddEventHandler('farming:createCustomItem', function(itemData)
                             stackable = itemData.stackable,
                             usable = itemData.usable,
                             description = itemData.description,
-                            creator = xPlayer.getName(),
+                            creator = playerName,
                             createdAt = os.date("%Y-%m-%d %H:%M:%S")
                         })
                         
                         -- Notification au joueur
-                        TriggerClientEvent('esx:showNotification', source, 
+                        TriggerEvent('farming:sendNotification', source, 
                             Config.Messages['item_created']:gsub('{name}', itemData.label))
                         
                         -- Log Discord
@@ -255,7 +256,7 @@ AddEventHandler('farming:createCustomItem', function(itemData)
                                 },
                                 {
                                     ["name"] = "👤 Créateur",
-                                    ["value"] = xPlayer.getName() .. " (" .. xPlayer.identifier .. ")",
+                                    ["value"] = playerName .. " (" .. playerIdentifier .. ")",
                                     ["inline"] = false
                                 }
                             }
@@ -280,7 +281,7 @@ AddEventHandler('farming:createCustomItem', function(itemData)
                         TriggerClientEvent('farming:itemCreated', -1, {
                             name = itemData.name,
                             label = itemData.label,
-                            creator = xPlayer.getName()
+                            creator = playerName
                         })
                         
                     else
@@ -298,24 +299,24 @@ end)
 RegisterServerEvent('farming:suggestCustomItem')
 AddEventHandler('farming:suggestCustomItem', function(itemData)
     local source = source
-    local xPlayer = ESX.GetPlayerFromId(source)
+    local xPlayer = Framework.GetPlayer(source)
     
     if not xPlayer then return end
     
     -- Vérifier si le système est activé
     if not Config.CustomItems.enabled or not Config.CustomItems.allowStaffSuggestions then
-        TriggerClientEvent('esx:showNotification', source, Config.Messages['item_system_disabled'])
+        TriggerEvent('farming:sendNotification', source, Config.Messages['item_system_disabled'])
         return
     end
     
     -- Validation des données
     if not itemData.name or itemData.name == "" then
-        TriggerClientEvent('esx:showNotification', source, Config.Messages['item_name_required'])
+        TriggerEvent('farming:sendNotification', source, Config.Messages['item_name_required'])
         return
     end
     
     if not itemData.label or itemData.label == "" then
-        TriggerClientEvent('esx:showNotification', source, Config.Messages['item_label_required'])
+        TriggerEvent('farming:sendNotification', source, Config.Messages['item_label_required'])
         return
     end
     
@@ -344,18 +345,18 @@ AddEventHandler('farming:suggestCustomItem', function(itemData)
         itemData.stackable,
         itemData.usable,
         itemData.description,
-        xPlayer.identifier,
-        xPlayer.getName(),
+        Framework.GetPlayerIdentifier(xPlayer),
+        Framework.GetPlayerName(xPlayer),
         true
     }, function(insertId)
         if insertId then
             -- Log dans la console
             if Config.CustomItems.logToConsole then
-                print('[Farming Creator] Suggestion d\'item reçue: ' .. itemData.name .. ' par ' .. xPlayer.getName())
+                Framework.Log('Suggestion d\'item reçue: ' .. itemData.name .. ' par ' .. Framework.GetPlayerName(xPlayer))
             end
             
             -- Notification au joueur
-            TriggerClientEvent('esx:showNotification', source, Config.Messages['item_suggestion_sent'])
+            TriggerEvent('farming:sendNotification', source, Config.Messages['item_suggestion_sent'])
             
             -- Log Discord pour les suggestions
             if Config.CustomItems.logToDiscord then
@@ -377,7 +378,7 @@ AddEventHandler('farming:suggestCustomItem', function(itemData)
                     },
                     {
                         ["name"] = "👤 Suggéré par",
-                        ["value"] = xPlayer.getName() .. " (" .. xPlayer.identifier .. ")",
+                        ["value"] = Framework.GetPlayerName(xPlayer) .. " (" .. Framework.GetPlayerIdentifier(xPlayer) .. ")",
                         ["inline"] = false
                     }
                 }
@@ -402,20 +403,20 @@ AddEventHandler('farming:suggestCustomItem', function(itemData)
 end)
 
 -- Callback pour récupérer les items personnalisés
-ESX.RegisterServerCallback('farming:getCustomItems', function(source, cb)
+Framework.RegisterServerCallback('farming:getCustomItems', function(source, cb)
     cb(customItems)
 end)
 
 -- Callback pour récupérer les suggestions d'items
-ESX.RegisterServerCallback('farming:getItemSuggestions', function(source, cb)
-    local xPlayer = ESX.GetPlayerFromId(source)
+Framework.RegisterServerCallback('farming:getItemSuggestions', function(source, cb)
+    local xPlayer = Framework.GetPlayer(source)
     if not xPlayer then 
         cb({})
         return 
     end
     
     -- Vérifier les permissions pour voir les suggestions
-    if Config.UsePermissions and xPlayer.getGroup() ~= Config.RequiredPermission then
+    if Config.UsePermissions and not Framework.HasPermission(xPlayer, Config.RequiredPermission) then
         cb({})
         return
     end
@@ -443,11 +444,11 @@ end)
 
 -- Commandes
 RegisterCommand(Config.Commands.createItem, function(source, args, rawCommand)
-    local xPlayer = ESX.GetPlayerFromId(source)
+    local xPlayer = Framework.GetPlayer(source)
     if not xPlayer then return end
     
-    if Config.UsePermissions and xPlayer.getGroup() ~= Config.RequiredPermission then
-        TriggerClientEvent('esx:showNotification', source, Config.Messages['no_permission'])
+    if Config.UsePermissions and not Framework.HasPermission(xPlayer, Config.RequiredPermission) then
+        TriggerEvent('farming:sendNotification', source, Config.Messages['no_permission'])
         return
     end
     
@@ -456,11 +457,11 @@ RegisterCommand(Config.Commands.createItem, function(source, args, rawCommand)
 end, false)
 
 RegisterCommand(Config.Commands.suggestItem, function(source, args, rawCommand)
-    local xPlayer = ESX.GetPlayerFromId(source)
+    local xPlayer = Framework.GetPlayer(source)
     if not xPlayer then return end
     
     if not Config.CustomItems.allowStaffSuggestions then
-        TriggerClientEvent('esx:showNotification', source, Config.Messages['item_system_disabled'])
+        TriggerEvent('farming:sendNotification', source, Config.Messages['item_system_disabled'])
         return
     end
     
@@ -469,16 +470,23 @@ RegisterCommand(Config.Commands.suggestItem, function(source, args, rawCommand)
 end, false)
 
 RegisterCommand(Config.Commands.itemMenu, function(source, args, rawCommand)
-    local xPlayer = ESX.GetPlayerFromId(source)
+    local xPlayer = Framework.GetPlayer(source)
     if not xPlayer then return end
     
-    if Config.UsePermissions and xPlayer.getGroup() ~= Config.RequiredPermission then
-        TriggerClientEvent('esx:showNotification', source, Config.Messages['no_permission'])
+    if Config.UsePermissions and not Framework.HasPermission(xPlayer, Config.RequiredPermission) then
+        TriggerEvent('farming:sendNotification', source, Config.Messages['no_permission'])
         return
     end
     
     -- Ouvrir le menu de gestion des items
     TriggerClientEvent('farming:openItemMenu', source)
 end, false)
+
+-- Event pour gérer les notifications côté serveur vers client
+RegisterServerEvent('farming:sendNotification')
+AddEventHandler('farming:sendNotification', function(message, type, duration)
+    local source = source
+    TriggerClientEvent('farming:receiveNotification', source, message, type, duration)
+end)
 
 print('[Farming Creator] Système d\'items personnalisés chargé')
