@@ -21,7 +21,10 @@ shared_scripts {
 files {
     'html/index.html',
     'html/style.css',
-    'html/script.js'
+    'html/script.js',
+    'html/zone_creator.html',
+    'html/zone_style.css',
+    'html/zone_script.js'
 }
 
 ui_page 'html/index.html'
