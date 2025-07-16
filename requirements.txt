@@ -1,0 +1,8 @@
+discord.py==2.3.2
+python-dotenv==1.0.0
+asyncio
+base64
+re
+zlib
+lzma
+cryptography==41.0.7
